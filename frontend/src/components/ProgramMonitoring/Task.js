@@ -158,13 +158,18 @@ const Task = ({ task }) => {
                   <p className="card-text">
                     <strong>Status:</strong> {currentTask.status}
                   </p>
-                  <CFormCheck
-                    style={{ display: task.status === 'notStarted' ? 'none' : 'block' }}
-                    id="flexCheckChecked"
-                    label="I have Completed The Task"
-                    checked={task.status === 'completed' ? true : false}
-                    onChange={handleToggleTaskStatus}
-                  />
+                  {task.status === 'inProgress' ? (
+                    <CFormCheck
+                      className="mb-3"
+                      style={{ display: task.status === 'notStarted' ? 'none' : 'block' }}
+                      id="flexCheckChecked"
+                      label={'I have Completed The Task'}
+                      checked={task.status === 'completed' ? true : false}
+                      onChange={handleToggleTaskStatus}
+                    />
+                  ) : (
+                    <p className=" text-center text-danger">the task not started yet</p>
+                  )}
                 </div>
               </div>
             </div>

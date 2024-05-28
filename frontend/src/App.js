@@ -87,6 +87,7 @@ const App = () => {
         <Route exact path="/500" name="Page 500" element={<Page500 />} />
         <Route exact path="/password-reset" name=" Account Recovery" element={<ResetPassword />} />
         <Route path="/Dash/*" element={isLogged ? <DefaultLayout /> : <Navigate to="/" />} />
+        
       </Routes>
     </Suspense>
   )

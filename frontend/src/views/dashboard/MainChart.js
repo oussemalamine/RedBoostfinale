@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react'
-
+import {useSelector} from 'react-redux'
 import { CChartLine } from '@coreui/react-chartjs'
 import { getStyle } from '@coreui/utils'
-
 const MainChart = () => {
   const chartRef = useRef(null)
   const entrepreneurs = useSelector((state) => state.entrepreneurs.entrepreneurs)

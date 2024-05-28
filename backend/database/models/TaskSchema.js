@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const fileSchema = new mongoose.Schema({
   fileName: {
@@ -13,7 +13,7 @@ const fileSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
 const kpiSchema = new mongoose.Schema({
   label: {
@@ -24,50 +24,62 @@ const kpiSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-})
+});
 
 const commentSchema = new mongoose.Schema({
-    commentId: {
-      type: String,
-      required: true,
-    },
-    commenter: {
-      type: String,
-      required: true, 
-    },
-    comment: {
-      type: String,
-      required: true, 
-    },
-    commentedAt: {
-      type: Date,
-      default: Date.now, 
-    },
-
-})
+  commentId: {
+    type: String,
+    required: true,
+  },
+  commenter: {
+    type: String,
+    required: true,
+  },
+  comment: {
+    type: String,
+    required: true,
+  },
+  commentedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 const taskSchema = new mongoose.Schema({
   taskName: {
     type: String,
     required: true,
   },
-  targetDate: {
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
     type: Date,
     required: true,
   },
   xpPoints: {
     type: Number,
-
   },
   status: {
     type: String,
-    enum: ['valid', 'inProgress', 'completed', 'cancelled', 'expired'],
-    default: 'inProgress',
+    enum: [
+      "notStarted",
+      "inProgress",
+      "completed",
+      "cancelled",
+      "expired",
+      "valid",
+    ],
+    required: true,
+  },
+  color: {
+    type: String,
     required: true,
   },
   taskOwner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   resources: {
@@ -91,14 +103,13 @@ const taskSchema = new mongoose.Schema({
   },
   activityId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Activity',
+    ref: "Activity",
     required: true,
   },
   comments: {
     type: [commentSchema],
-    default: [], 
+    default: [],
   },
 });
 
-
-module.exports = mongoose.model('Task', taskSchema)
+module.exports = mongoose.model("Task", taskSchema);

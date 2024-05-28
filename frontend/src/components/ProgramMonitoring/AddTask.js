@@ -9,26 +9,75 @@ import {
   CFormInput,
   CInputGroup,
   CFormSelect,
+  CInputGroupText,
 } from '@coreui/react'
 import { useSelector } from 'react-redux'
 const formatDate = (date) => {
   let month = '' + (date.getMonth() + 1), // getMonth() is zero-based
-      day = '' + date.getDate(),
-      year = date.getFullYear();
+    day = '' + date.getDate(),
+    year = date.getFullYear()
 
-  if (month.length < 2) 
-      month = '0' + month;
-  if (day.length < 2) 
-      day = '0' + day;
+  if (month.length < 2) month = '0' + month
+  if (day.length < 2) day = '0' + day
 
-  return [year, month, day].join('-');
-};
+  return [year, month, day].join('-')
+}
 
-function AddTask({ open, setOpen, handleAddTask }) {
+function AddTask({ open, setOpen, handleAddTask, activity }) {
   const [taskName, setTaskName] = useState('')
-  const [targetDate, setTargetDate] = useState(formatDate(new Date())); 
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [taskOwner, setTaskOwner] = useState('')
   const users = useSelector((state) => state.usersSlice.users)
+
+  const handleChangeStartDate = (date) => {
+    if (endDate && date > endDate) {
+      alert('Start date must be less than end date')
+      setStartDate(endDate)
+    } else if (date < activity.startDate) {
+      alert('Start date must be greater than activity start date')
+    } else if (date > activity.endDate) {
+      alert('Start date must be less than activity end date')
+    } else {
+      setStartDate(date)
+    }
+  }
+
+  const handleChangeEndDate = (date) => {
+    if (date < startDate) {
+      alert('End date must be greater than start date')
+      setEndDate(startDate)
+    } else if (date > activity.endDate) {
+      alert('End date must be less than activity end date')
+    } else if (date < activity.startDate) {
+      alert('End date must be greater than activity start date')
+    } else {
+      setEndDate(date)
+    }
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!taskName || !startDate || !endDate || !taskOwner) {
+      alert('All fields are required')
+    } else {
+      const currentDate = new Date()
+      currentDate.setHours(0, 0, 0, 0)
+
+      const taskStartDate = new Date(startDate)
+      taskStartDate.setHours(0, 0, 0, 0)
+      const taskData = {
+        taskName: taskName,
+        startDate: startDate,
+        endDate: endDate,
+        status: taskStartDate > currentDate ? 'notStarted' : 'inProgress',
+        color: taskStartDate > currentDate ? 'blue' : 'pink',
+        taskOwner: taskOwner,
+      }
+      handleAddTask(taskData)
+      setOpen(false)
+    }
+  }
   return (
     <>
       <CModal
@@ -42,8 +91,8 @@ function AddTask({ open, setOpen, handleAddTask }) {
         </CModalHeader>
         <CModalBody>
           <CFormInput
-          label="Task Name:"
-          className="mb-3"
+            label="Task Name:"
+            className="mb-3"
             type="text"
             id="name"
             name="name"
@@ -51,16 +100,26 @@ function AddTask({ open, setOpen, handleAddTask }) {
             value={taskName}
             onChange={(e) => setTaskName(e.target.value)}
           />
-          <CFormInput
-          className="mb-3"
-            label="Target Date:"
-            type="date"
-            id="TargetDay"
-            name="TargetDate"
-            placeholder="Target Day"
-            value={targetDate}
-            onChange={(e) => setTargetDate(e.target.value)}
-          />
+          <CInputGroup className="mb-3">
+            <CInputGroupText id="basic-addon2">Start Date</CInputGroupText>
+            <CFormInput
+              type="date"
+              id="start date"
+              placeholder="Enter start date"
+              value={startDate}
+              onChange={(e) => handleChangeStartDate(e.target.value)}
+            />
+          </CInputGroup>
+          <CInputGroup className="mb-3">
+            <CInputGroupText id="basic-addon2">End Date</CInputGroupText>
+            <CFormInput
+              type="date"
+              id="end date"
+              placeholder="Enter end date"
+              value={endDate}
+              onChange={(e) => handleChangeEndDate(e.target.value)}
+            />
+          </CInputGroup>
           <CInputGroup className="mb-3">
             <CFormSelect
               aria-label="The Task Owner"
@@ -80,10 +139,7 @@ function AddTask({ open, setOpen, handleAddTask }) {
           <CButton color="danger" onClick={() => setOpen(false)}>
             Close
           </CButton>
-          <CButton
-            color="primary"
-            onClick={() => handleAddTask({ taskName, targetDate, taskOwner })}
-          >
+          <CButton color="primary" onClick={handleSubmit}>
             Add
           </CButton>
         </CModalFooter>

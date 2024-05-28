@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import classNames from 'classnames'
 
 import {
@@ -20,33 +21,12 @@ import {
   CTableRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import {
-  cibCcAmex,
-  cibCcApplePay,
-  cibCcMastercard,
-  cibCcPaypal,
-  cibCcStripe,
-  cibCcVisa,
-  cibGoogle,
-  cibFacebook,
-  cibLinkedin,
-  cifBr,
-  cifEs,
-  cifFr,
-  cifIn,
-  cifPl,
-  cifUs,
-  cibTwitter,
-  cilCloudDownload,
-  cilPeople,
-  cilUser,
-  cilUserFemale,
-} from '@coreui/icons'
-import userAvatar from '../../components/Images/user.png'
+import { cilPeople } from '@coreui/icons'
+
 import WidgetsBrand from '../widgets/WidgetsBrand'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
-import { useSelector } from 'react-redux'
+import userAvatar from '../../components/Images/user.png'
 
 const Dashboard = () => {
   const users = useSelector((state) => state.usersSlice.users)
@@ -54,10 +34,10 @@ const Dashboard = () => {
 
   return (
     <>
-      {/* top cards  */}
+      {/* Top Cards */}
       <WidgetsDropdown users={users} className="mb-4" />
-      {/* Twitter and social media section */}
-
+      
+      {/* Online Users Section */}
       <CRow>
         <CCol xs>
           <CCard className="mb-4">
@@ -70,19 +50,15 @@ const Dashboard = () => {
                       <CIcon icon={cilPeople} />
                     </CTableHeaderCell>
                     <CTableHeaderCell className="bg-body-tertiary">User</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary text-center">
-                      Birthday
-                    </CTableHeaderCell>
+                    <CTableHeaderCell className="bg-body-tertiary text-center">Birthday</CTableHeaderCell>
                     <CTableHeaderCell className="bg-body-tertiary">Email</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary text-center">
-                      Phone
-                    </CTableHeaderCell>
+                    <CTableHeaderCell className="bg-body-tertiary text-center">Phone</CTableHeaderCell>
                     <CTableHeaderCell className="bg-body-tertiary">Role</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
                   {users.map((user, index) => (
-                    <CTableRow v-for="item in tableItems" key={index}>
+                    <CTableRow key={index}>
                       <CTableDataCell className="text-center">
                         <CAvatar
                           size="md"
@@ -92,16 +68,13 @@ const Dashboard = () => {
                       </CTableDataCell>
                       <CTableDataCell>
                         <div>{user.username}</div>
-                        {/* <div className="small text-body-secondary text-nowrap">
-                          <span>{item.user.new ? 'New' : 'Recurring'}</span> | Registered:{' '}
-                          {item.user.registered}
-                        </div> */}
+
                       </CTableDataCell>
                       <CTableDataCell className="text-center">{user.birthday}</CTableDataCell>
                       <CTableDataCell>{user.email}</CTableDataCell>
                       <CTableDataCell className="text-center">{user.phone}</CTableDataCell>
                       <CTableDataCell>
-                        {/* <div className="small text-body-secondary text-nowrap">Last login</div> */}
+
                         <div className="fw-semibold text-nowrap">{user.role}</div>
                       </CTableDataCell>
                     </CTableRow>
@@ -112,6 +85,9 @@ const Dashboard = () => {
           </CCard>
         </CCol>
       </CRow>
+      
+      {/* Main Chart */}
+      <MainChart/>
     </>
   )
 }

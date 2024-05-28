@@ -92,16 +92,13 @@ const Dashboard = () => {
                       </CTableDataCell>
                       <CTableDataCell>
                         <div>{user.username}</div>
-                        {/* <div className="small text-body-secondary text-nowrap">
-                          <span>{item.user.new ? 'New' : 'Recurring'}</span> | Registered:{' '}
-                          {item.user.registered}
-                        </div> */}
+
                       </CTableDataCell>
                       <CTableDataCell className="text-center">{user.birthday}</CTableDataCell>
                       <CTableDataCell>{user.email}</CTableDataCell>
                       <CTableDataCell className="text-center">{user.phone}</CTableDataCell>
                       <CTableDataCell>
-                        {/* <div className="small text-body-secondary text-nowrap">Last login</div> */}
+
                         <div className="fw-semibold text-nowrap">{user.role}</div>
                       </CTableDataCell>
                     </CTableRow>

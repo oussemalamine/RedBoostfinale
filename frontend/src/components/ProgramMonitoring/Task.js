@@ -9,14 +9,19 @@ import {
   CListGroupItem,
   CButton,
   CFormInput,
-  CFormTextarea,
   CFormCheck,
+  CFormTextarea,
 } from '@coreui/react'
-
 import { updateTask } from '../../app/features/task/taskSlice'
 import { useDispatch, useSelector } from 'react-redux'
+import CommentSection from './CommentSection'
+import img from '../Images/details.webp'
+import { IoClose } from 'react-icons/io5'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 const Task = ({ task }) => {
   const dispatch = useDispatch()
+  const [currentTask, setCurrentTask] = useState(task)
   const [newKpiLabel, setNewKpiLabel] = useState('')
   const [newKpiValue, setNewKpiValue] = useState('')
   const [newDeliverableName, setNewDeliverableName] = useState('')
@@ -43,8 +48,17 @@ const Task = ({ task }) => {
       }),
     )
   }
-
+  const notifyError = (field) => {
+    toast.error(`The ${field} field is required.`, {
+      autoClose: 3000,
+    })
+  }
   const handleAddKpi = () => {
+    if (newKpiLabel === '') {
+      return notifyError('Kpi Label')
+    } else if (newKpiValue === '') {
+      return notifyError('Kpi Value')
+    }
     const updatedTask = {
       ...task,
       kpis: [...task.kpis, { label: newKpiLabel, count: newKpiValue }],
@@ -55,9 +69,14 @@ const Task = ({ task }) => {
         taskData: updatedTask,
       }),
     )
+    setCurrentTask(updatedTask)
   }
 
   const handleAddDeliverable = () => {
+    if (newDeliverableName === '') {
+      return notifyError('Deliverable Name')
+    }
+
     const updatedTask = {
       ...task,
       deliverables: [
@@ -74,9 +93,15 @@ const Task = ({ task }) => {
         taskData: updatedTask,
       }),
     )
+    setCurrentTask(updatedTask)
   }
 
   const handleAddRapport = () => {
+    if (newRapportTitle === '') {
+      return notifyError('Rapport Title')
+    } else if (newRapportText === '') {
+      return notifyError('Rapport Text')
+    }
     const updatedTask = {
       ...task,
       reports: [...task.reports, { label: newRapportTitle, count: newRapportText }],
@@ -87,6 +112,7 @@ const Task = ({ task }) => {
         taskData: updatedTask,
       }),
     )
+    setCurrentTask(updatedTask)
   }
 
   const handleAddComment = () => {
@@ -100,45 +126,63 @@ const Task = ({ task }) => {
       }),
     )
   }
+  const getColorByIndex = (index) => {
+    const colors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark']
+
+    // Use modulo to cycle through colors based on index
+    return colors[index % colors.length]
+  }
 
   return (
     <>
+      <ToastContainer />
       <CRow>
         <CCol>
-          <CCard>
-            <CCardHeader>Task Details</CCardHeader>
-            <CCardBody>
-              <div>
-                <p>
-                  <strong>Task Name:</strong> {task.taskName}
-                </p>
-                <p>
-                  <strong>Task Owner:</strong> {task.taskOwner}
-                </p>
-                <p>
-                  <strong>Target Date:</strong> {task.targetDate}
-                </p>
-                <p>
-                  <strong>Status:</strong> {task.status}
-                </p>
-                <CFormCheck
-                  id="flexCheckChecked"
-                  label="I have Completed The Task"
-                  checked={task.status === 'completed' ? true : false}
-                  onChange={handleToggleTaskStatus}
-                />
+          <div className="card mb-3" style={{ maxWidth: '540px' }}>
+            <div className="row g-0">
+              <div className="col-md-4">
+                <img src={img} alt="Trendy Pants and Shoes" className="img-fluid rounded-start" />
               </div>
-            </CCardBody>
-          </CCard>
+              <div className="col-md-8">
+                <div className="card-body">
+                  <h5 className="card-title">Task Details</h5>
+                  <p className="card-text">
+                    <strong>Task Name:</strong> {currentTask.taskName}
+                  </p>
+                  <p className="card-text">
+                    <strong>Task Owner:</strong> {currentTask.taskOwner}
+                  </p>
+                  <p className="card-text">
+                    <strong>Target Date:</strong> {new Date(currentTask.targetDate).toDateString()}
+                  </p>
+                  <p className="card-text">
+                    <strong>Status:</strong> {currentTask.status}
+                  </p>
+                  {task.status === 'inProgress' ? (
+                    <CFormCheck
+                      className="mb-3"
+                      style={{ display: task.status === 'notStarted' ? 'none' : 'block' }}
+                      id="flexCheckChecked"
+                      label={'I have Completed The Task'}
+                      checked={task.status === 'completed' ? true : false}
+                      onChange={handleToggleTaskStatus}
+                    />
+                  ) : (
+                    <p className=" text-center text-danger">the task not started yet</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </CCol>
         <CCol>
           <CCard>
-            <CCardHeader>Resources</CCardHeader>
+            <CCardHeader className="bg-dark text-light">Resources</CCardHeader>
             <CCardBody>
               <div>
-                <h5>{task.taskName} Resources:</h5>
+                <h5>{currentTask.taskName} Resources:</h5>
                 <CListGroup>
-                  {task.resources.map((resource, index) => (
+                  {currentTask.resources.map((resource, index) => (
                     <CListGroupItem key={index}>
                       <CButton href={resource.url} download color="link">
                         {resource.fileName}
@@ -153,17 +197,45 @@ const Task = ({ task }) => {
       </CRow>
 
       <CCard className="mt-3 mb-3">
-        <CCardHeader>Sections</CCardHeader>
+        <CCardHeader className="bg-dark text-light">Sections</CCardHeader>
         <CCardBody>
           <CCard className="mt-3 mb-3">
-            <CCardHeader>KPIs</CCardHeader>
+            <CCardHeader className="bg-info text-light">KPIs</CCardHeader>
             <CCardBody>
               <CListGroup>
-                {task.kpis.map((kpi, index) => (
-                  <CListGroupItem key={index}>
-                    <strong>{kpi.label}:</strong> {kpi.count}
-                  </CListGroupItem>
-                ))}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {' '}
+                  {/* Wrapper div with flex properties */}
+                  {currentTask.kpis.map((kpi, index) => (
+                    <div
+                      key={index}
+                      className={`card text-bg-${getColorByIndex(index)} mb-3`}
+                      style={{ minWidth: '260px', marginRight: '10px' }}
+                    >
+                      <div
+                        className="card-header"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        KPI-{index} <IoClose />
+                      </div>
+                      <div className="card-body">
+                        <h5 className="card-title">{kpi.label}</h5>
+                        <p className="card-text">{kpi.count}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
                 <CListGroupItem>
                   <label htmlFor="newKpiLabel">Label:</label>
                   <CFormInput
@@ -181,7 +253,11 @@ const Task = ({ task }) => {
                     onChange={(e) => setNewKpiValue(e.target.value)}
                     className="mt-3 mb-3"
                   />
-                  <CButton color="primary" onClick={() => handleAddKpi()} className="mt-3 mb-3">
+                  <CButton
+                    style={{ backgroundColor: '#00cc99' }}
+                    onClick={() => handleAddKpi()}
+                    className="mt-3 mb-3"
+                  >
                     Add KPI
                   </CButton>
                 </CListGroupItem>
@@ -190,10 +266,10 @@ const Task = ({ task }) => {
           </CCard>
 
           <CCard className="mt-3 mb-3">
-            <CCardHeader>Documents</CCardHeader>
+            <CCardHeader className="bg-info text-light">Documents</CCardHeader>
             <CCardBody>
               <CListGroup>
-                {task.deliverables.map((deliverable, index) => (
+                {currentTask.deliverables.map((deliverable, index) => (
                   <CListGroupItem key={index}>
                     <CButton href={deliverable.url} download color="link">
                       {deliverable.fileName}
@@ -216,7 +292,10 @@ const Task = ({ task }) => {
                     type="file"
                     onChange={(e) => setDeliverableFile(e.target.files[0])}
                   />
-                  <CButton color="primary" onClick={() => handleAddDeliverable()}>
+                  <CButton
+                    style={{ backgroundColor: '#00cc99' }}
+                    onClick={() => handleAddDeliverable()}
+                  >
                     Add Deliverable
                   </CButton>
                 </CListGroupItem>
@@ -225,16 +304,44 @@ const Task = ({ task }) => {
           </CCard>
 
           <CCard className="mt-3 mb-3">
-            <CCardHeader>Reporting Section</CCardHeader>
-            <CListGroup>
-              {task.reports.map((report, index) => (
-                <CListGroupItem key={index}>
-                  <div>{report.label}</div>
-                  <div>{report.count}</div>
-                </CListGroupItem>
+            <CCardHeader className="bg-info text-light">Reporting Section</CCardHeader>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px',
+              }}
+            >
+              {currentTask.reports.map((report, index) => (
+                <div
+                  style={{ minWidth: '300px', margin: '10px' }}
+                  className={`card radius-10 border-start border-0 border-3 border-${getColorByIndex(index)} shadow`}
+                >
+                  <IoClose
+                    style={{
+                      position: 'absolute',
+                      top: '0',
+                      right: '0',
+                      fontSize: '20px',
+                      margin: '5px',
+                    }}
+                  />
+                  <div className="card-body">
+                    <div className="d-flex align-items-center">
+                      <div>
+                        <p className="mb-0 text-secondary">{report.label}</p>
+                        <p className="mb-0 font-13">{report.count}</p>
+                      </div>
+                      <div className="widgets-icons-2 rounded-circle bg-gradient-ohhappiness text-white ms-auto">
+                        <i className="fa fa-bar-chart"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </CListGroup>
-
+            </div>
             <CCardBody>
               <CFormInput
                 placeholder="Title"
@@ -243,29 +350,25 @@ const Task = ({ task }) => {
                 className="mb-3"
               />
               <CFormTextarea
-                id="newRapportText"
                 placeholder="Text"
                 value={newRapportText}
                 onChange={(e) => setNewRapportText(e.target.value)}
                 className="mt-3 mb-3"
               />
-              <CButton color="primary" onClick={() => handleAddRapport()} className="mt-3 mb-3">
+              <CButton
+                style={{ backgroundColor: '#00cc99' }}
+                onClick={() => handleAddRapport()}
+                className="mt-3 mb-3"
+              >
                 Add Reporting Section
               </CButton>
             </CCardBody>
           </CCard>
 
           <CCard className="mt-3 mb-3">
-            <CCardHeader>Comment Section</CCardHeader>
+            <CCardHeader className="bg-info text-light">Comment Section</CCardHeader>
             <CCardBody>
-              <CFormInput
-                placeholder="Comment"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-              />
-              <CButton color="primary" onClick={() => handleAddComment()} className="mt-3 mb-3">
-                Add Comment
-              </CButton>
+              <CommentSection />
             </CCardBody>
           </CCard>
         </CCardBody>

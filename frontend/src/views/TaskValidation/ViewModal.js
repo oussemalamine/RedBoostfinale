@@ -13,19 +13,19 @@ import {
 import formatDate from '../../components/CustomFunctions'
 import { useDispatch } from 'react-redux'
 import { loadTasks, updateTask } from '../../app/features/task/taskSlice'
-function ViewModal({ showModal, setShowModal, selectedTask,setSelectedTask}) {
-  console.log("selectedTask :",selectedTask)
+function ViewModal({ showModal, setShowModal, selectedTask, setSelectedTask }) {
+  console.log('selectedTask :', selectedTask)
   const dispatch = useDispatch()
   const handleChange = (e) => {
-    const {name,value} = e.target
-    const updatedTask = {...selectedTask,[name]:value}
+    const { name, value } = e.target
+    const updatedTask = { ...selectedTask, [name]: value }
     setSelectedTask(updatedTask)
   }
-  const handleSubmit = () =>{
-    const {_id, ...taskData} = selectedTask;
-    console.log("taskID",_id)
-   dispatch(updateTask({taskId:_id,taskData}))
-   setShowModal(false)
+  const handleSubmit = () => {
+    const { _id, ...taskData } = selectedTask
+    console.log('taskID', _id)
+    dispatch(updateTask({ taskId: _id, taskData }))
+    setShowModal(false)
   }
   return (
     <CModal
@@ -42,7 +42,7 @@ function ViewModal({ showModal, setShowModal, selectedTask,setSelectedTask}) {
           <CFormInput
             type="text"
             id="taskTitle"
-            name='taskName'
+            name="taskName"
             placeholder="Task Title"
             aria-describedby="taskTitleHelpInline"
             value={selectedTask.taskName}
@@ -50,19 +50,21 @@ function ViewModal({ showModal, setShowModal, selectedTask,setSelectedTask}) {
           />
         </div>
         <div className="mb-3">
-
-          <CFormSelect value={selectedTask.status} id="taskStatus" name="status" onChange={handleChange}>
-             <option value={"inProgress"}>inProgress</option>
-             <option value={"completed"}>completed</option>
-             <option value={"cancelled"}>cancelled</option>
-             <option value={"valid"}>valid</option>
+          <CFormSelect
+            value={selectedTask.status}
+            id="taskStatus"
+            name="status"
+            onChange={handleChange}
+          >
+            <option value={'inProgress'}>inProgress</option>
+            <option value={'cancelled'}>cancelled</option>
           </CFormSelect>
         </div>
         <div className="mb-3">
           <CFormInput
-            value={formatDate(new Date(selectedTask.targetDate))}
+            value={formatDate(new Date(selectedTask.endDate))}
             type="date"
-            name='targetDate'
+            name="targetDate"
             id="taskDate"
             placeholder="Task Date"
             onChange={handleChange}
@@ -72,7 +74,7 @@ function ViewModal({ showModal, setShowModal, selectedTask,setSelectedTask}) {
           <CFormInput
             value={selectedTask.xpPoints}
             type="number"
-            name='xpPoints'
+            name="xpPoints"
             id="xpPoints"
             placeholder="xpPoints"
             onChange={handleChange}
@@ -99,7 +101,9 @@ function ViewModal({ showModal, setShowModal, selectedTask,setSelectedTask}) {
         <CButton color="danger" onClick={() => setShowModal(false)}>
           Close
         </CButton>
-        <CButton color="primary" onClick={handleSubmit}>Edit</CButton>
+        <CButton color="primary" onClick={handleSubmit}>
+          Edit
+        </CButton>
       </CModalFooter>
     </CModal>
   )

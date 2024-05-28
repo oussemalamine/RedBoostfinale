@@ -1,5 +1,3 @@
-// TaskValidation.js
-
 import React, { useEffect, useState } from 'react'
 import userImg from '../../components/Images/user.png'
 import {
@@ -20,7 +18,7 @@ import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { FaListCheck } from 'react-icons/fa6'
 import ViewModal from './ViewModal'
-import {useDispatch, useSelector} from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { deleteTask, loadTasks, updateTask } from '../../app/features/task/taskSlice'
 import { updateUser } from '../../app/features/users/usersSlice'
 import { setUserData } from '../../app/features/userData/userData'
@@ -30,70 +28,57 @@ const TaskValidation = () => {
   const [selectedTask, setSelectedTask] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const dispatch = useDispatch()
-  useEffect(()=>{
-     dispatch(loadTasks())
-     console.log("render")
-  },[])
-  const users = useSelector((state)=>state.usersSlice.users)
-  console.log("users",users)
-  const tasks = useSelector((state)=>state.task.allTasks)
-  const currentUser = useSelector((state)=>state.userData.userData)
-  console.log("tasks :",tasks)
+  const users = useSelector((state) => state.usersSlice.users)
+  console.log('users', users)
+  const tasks = useSelector((state) => state.task.allTasks)
+  const filterTasks = tasks.filter((task) => {
+    return task.status === 'completed' || task.status === 'valid' || task.status == 'cancelled'
+  })
+  console.log('filterTasks', filterTasks)
+  const currentUser = useSelector((state) => state.userData.userData)
+  console.log('tasks :', tasks)
   const handleViewTask = (task) => {
     setSelectedTask(task)
     setShowModal(true)
   }
 
-  const handleTaskDone = (task) => { 
+  const handleTaskDone = (task) => {
     const user = users.find((user) => user._id === task.taskOwner)
-    console.log("user",user)
-   dispatch(updateTask({taskId:task._id,taskData:{...task,status:"valid"}}))
-   dispatch(updateUser({userId:task.taskOwner,userData:{exp:task.xpPoints+Number(user.exp)}}))
-   task.taskOwner === currentUser._id && dispatch(setUserData({...currentUser,exp:task.xpPoints+Number(currentUser.exp)}))
+    console.log('user', user)
+    dispatch(updateTask({ taskId: task._id, taskData: { ...task, status: 'valid' } }))
+    dispatch(
+      updateUser({ userId: task.taskOwner, userData: { exp: task.xpPoints + Number(user.exp) } }),
+    )
+    task.taskOwner === currentUser._id &&
+      dispatch(setUserData({ ...currentUser, exp: task.xpPoints + Number(currentUser.exp) }))
   }
   const handleDelete = (taskId) => {
     dispatch(deleteTask(taskId))
   }
   const getCompletedTasks = () => {
     let nb = 0
-    tasks.map((task) => {
+    filterTasks.map((task) => {
       if (task.status === 'completed') {
         nb++
       }
     })
     return nb
   }
-  const getPendingTasks = () => {
-    let nb = 0
-    tasks.map((task) => {
-      if (task.status === 'inProgress') {
-        nb++
-      }
-    })
-    return nb
-  }
-  const getValidTasks = () => {
-    let nb = 0
-    tasks.map((task) => {
-      if (task.status === 'valid') {
-        nb++
-      }
-    })
-    return nb
-  }
+
   const getCanceledTasks = () => {
     let nb = 0
-    tasks.map((task) => {
+    filterTasks.map((task) => {
       if (task.status === 'cancelled') {
         nb++
       }
     })
     return nb
   }
-  const getExpiredTasks = () => {
+
+  const getValidTasks = () => {
     let nb = 0
-    tasks.map((task) => {
-      if (task.status === 'expired') {
+    filterTasks.map((task) => {
+      if (task.status === 'valid') {
         nb++
       }
     })
@@ -101,12 +86,12 @@ const TaskValidation = () => {
   }
 
   const chartData = {
-    labels: ['valid', 'inProgress', 'completed', 'cancelled', 'expired'],
+    labels: ['valid', 'completed', 'cancelled'],
     datasets: [
       {
         label: 'Tasks',
-        data: [getValidTasks(), getPendingTasks(), getCompletedTasks(),getCanceledTasks(),getExpiredTasks()], // Example data: 2 done, 8 pending
-        backgroundColor: ['#28a745', '#FFEA61', 'blue','gray','tomato'], // Colors for done and pending tasks
+        data: [getValidTasks(), getCompletedTasks(), getCanceledTasks()],
+        backgroundColor: ['#28a745', 'blue', 'gray'],
       },
     ],
   }
@@ -120,29 +105,20 @@ const TaskValidation = () => {
     },
   }
 
-  const getBadgeColor = (priority) => {
-    if (priority === 'High') {
-      return 'bg-danger'
-    } else if (priority === 'Medium') {
-      return 'bg-warning'
-    } else {
-      return 'bg-success'
-    }
-  }
   const getStatusColor = (status) => {
     if (status === 'inProgress') {
       return 'bg-warning'
     } else if (status === 'expired') {
       return 'bg-danger'
-    } else if(status === 'valid'){
+    } else if (status === 'valid') {
       return 'bg-success'
-    }else if (status === 'cancelled'){
+    } else if (status === 'cancelled') {
       return 'bg-secondary'
-    }else{
+    } else {
       return 'bg-info'
     }
   }
-  const filteredTasks = tasks.filter((task) => {
+  const filteredTasks = filterTasks.filter((task) => {
     const searchTermLowerCase = searchTerm.toLowerCase()
     return (
       task.taskName.toLowerCase().includes(searchTermLowerCase) ||
@@ -152,11 +128,16 @@ const TaskValidation = () => {
       task.targetDate.includes(searchTermLowerCase)
     )
   })
- 
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {selectedTask && (
-        <ViewModal showModal={showModal} setShowModal={setShowModal} selectedTask={selectedTask} setSelectedTask={setSelectedTask}/>
+        <ViewModal
+          showModal={showModal}
+          setShowModal={setShowModal}
+          selectedTask={selectedTask}
+          setSelectedTask={setSelectedTask}
+        />
       )}
       <CCard>
         <CCardHeader
@@ -188,60 +169,61 @@ const TaskValidation = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {filteredTasks.map((task, index) =>{
-                  const user = users.find((user) => user._id === task.taskOwner)
-                  console.log("user",user)
+              {filteredTasks.map((task, index) => {
+                const user = users.find((user) => user._id === task.taskOwner)
+                console.log('user', user)
                 return (
-                <CTableRow key={index}>
-                  <CTableDataCell>
-                    <img
-                      src={user?.image ? user.image : userImg}
-                      alt="avatar 1"
-                      style={{ width: '45px', height: 'auto' }}
-                    />
-                    <span className="ms-2">{user?.username}</span>
-                  </CTableDataCell>
-                  <CTableDataCell style={{ alignContent: 'center' }}>
-                    {task.taskName}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ alignContent: 'center' }}>
-                    <span className={`badge ${getStatusColor(task.status)}`}>{task.status}</span>
-                  </CTableDataCell>
-                  <CTableDataCell style={{ alignContent: 'center' }}>
-                    {task.xpPoints}XP
-                  </CTableDataCell>
-                  <CTableDataCell style={{ alignContent: 'center' }}>
-                    {new Date(task.targetDate).toLocaleDateString()}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ alignContent: 'center' }}>
-                    {task.status !== 'Complete' ? (
-                      <MdDone
-                        onClick={() => handleTaskDone(task)}
+                  <CTableRow key={index}>
+                    <CTableDataCell>
+                      <img
+                        src={user?.image ? user.image : userImg}
+                        alt="avatar 1"
+                        style={{ width: '45px', height: 'auto' }}
+                      />
+                      <span className="ms-2">{user?.username}</span>
+                    </CTableDataCell>
+                    <CTableDataCell style={{ alignContent: 'center' }}>
+                      {task.taskName}
+                    </CTableDataCell>
+                    <CTableDataCell style={{ alignContent: 'center' }}>
+                      <span className={`badge ${getStatusColor(task.status)}`}>{task.status}</span>
+                    </CTableDataCell>
+                    <CTableDataCell style={{ alignContent: 'center' }}>
+                      {task.xpPoints}XP
+                    </CTableDataCell>
+                    <CTableDataCell style={{ alignContent: 'center' }}>
+                      {new Date(task.targetDate).toLocaleDateString()}
+                    </CTableDataCell>
+                    <CTableDataCell style={{ alignContent: 'center' }}>
+                      {task.status !== 'Complete' ? (
+                        <MdDone
+                          onClick={() => handleTaskDone(task)}
+                          style={{
+                            color: 'green',
+                            fontSize: '25px',
+                            cursor: 'pointer',
+                            marginRight: '10px',
+                          }}
+                        />
+                      ) : null}
+
+                      <HiMagnifyingGlassCircle
+                        onClick={() => handleViewTask(task)}
                         style={{
-                          color: 'green',
+                          color: 'blue',
                           fontSize: '25px',
                           cursor: 'pointer',
                           marginRight: '10px',
                         }}
                       />
-                    ) : null}
-
-                    <HiMagnifyingGlassCircle
-                      onClick={() => handleViewTask(task)}
-                      style={{
-                        color: 'blue',
-                        fontSize: '25px',
-                        cursor: 'pointer',
-                        marginRight: '10px',
-                      }}
-                    />
-                    <MdDelete
-                      onClick={() => handleDelete(task._id)}
-                      style={{ color: 'red', fontSize: '25px', cursor: 'pointer' }}
-                    />
-                  </CTableDataCell>
-                </CTableRow>
-              )})}
+                      <MdDelete
+                        onClick={() => handleDelete(task._id)}
+                        style={{ color: 'red', fontSize: '25px', cursor: 'pointer' }}
+                      />
+                    </CTableDataCell>
+                  </CTableRow>
+                )
+              })}
             </CTableBody>
           </CTable>
         </CCardBody>

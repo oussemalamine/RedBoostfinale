@@ -68,11 +68,13 @@ const Dashboard = () => {
                       </CTableDataCell>
                       <CTableDataCell>
                         <div>{user.username}</div>
+
                       </CTableDataCell>
                       <CTableDataCell className="text-center">{user.birthday}</CTableDataCell>
                       <CTableDataCell>{user.email}</CTableDataCell>
                       <CTableDataCell className="text-center">{user.phone}</CTableDataCell>
                       <CTableDataCell>
+
                         <div className="fw-semibold text-nowrap">{user.role}</div>
                       </CTableDataCell>
                     </CTableRow>

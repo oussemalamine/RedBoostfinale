@@ -8,37 +8,66 @@ import {
   CButton,
   CFormInput,
   CFormTextarea,
+  CFormSelect,
+  CInputGroup,
+  CInputGroupText,
 } from '@coreui/react'
 import axiosInstance from '../../axiosInstance.js'
 function AddActivity({ open, setOpen, handleAddActivity, program }) {
-  const [allDay, setAllDay] = useState(false) // State to track "All Day Activity" checkbox
-  const [activity, setActivity] = useState({})
-  const handleChange = (e) => {
-    console.log(e.target)
-    const { name, value } = e.target
-    console.log(name, value)
-    console.log(activity.startDate)
-    if (name == 'endDate' && activity.startDate && value < activity.startDate) {
-      alert('End Date cannot be before Start Date')
-      return
-    } else if (name == 'startDate' && activity.endDate && value > activity.endDate) {
-      alert('Start Date cannot be after End Date')
-      return
-    } else if (name == 'startTime' && value < program.startTime) {
-      alert('Start Time cannot be before Program Start Time')
-      return
-    } else if (name == 'endTime' && value > program.endTime) {
-      alert('End Time cannot be after Program End Time')
-      return
-    }
-    setActivity((prevAct) => ({
-      color: '#93bb9f',
-      ...prevAct,
-      [name]: value,
-    }))
-  }
-  console.log(activity)
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
+  const handleChangeStartDate = (date) => {
+    if (endDate && date > endDate) {
+      alert('Start date must be less than end date')
+      setStartDate(endDate)
+    } else if (date < program.startDate) {
+      alert('Start date must be greater than program start date')
+    } else if (date > program.endDate) {
+      alert('Start date must be less than program end date')
+    } else {
+      setStartDate(date)
+    }
+  }
+
+  const handleChangeEndDate = (date) => {
+    if (date < startDate) {
+      alert('End date must be greater than start date')
+      setEndDate(startDate)
+    } else if (date > program.endDate) {
+      alert('End date must be less than program end date')
+    } else if (date < program.startDate) {
+      alert('End date must be greater than program start date')
+    } else {
+      setEndDate(date)
+    }
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!name || !description || !startDate || !endDate) {
+      alert('All fields are required')
+    } else {
+      const currentDate = new Date()
+      currentDate.setHours(0, 0, 0, 0)
+
+      const activityStartDate = new Date(startDate)
+      activityStartDate.setHours(0, 0, 0, 0)
+
+      const activityData = {
+        name,
+        description,
+        startDate,
+        endDate,
+        color: activityStartDate > currentDate ? 'blue' : 'pink',
+        status: activityStartDate > currentDate ? 'notStarted' : 'inProgress',
+      }
+      handleAddActivity(activityData)
+      setOpen(false)
+    }
+  }
   return (
     <>
       <CModal
@@ -58,7 +87,7 @@ function AddActivity({ open, setOpen, handleAddActivity, program }) {
             placeholder="Activity Name"
             text="Must be 6-20 characters long."
             aria-describedby="exampleFormControlInputHelpInline"
-            onChange={handleChange}
+            onChange={(e) => setName(e.target.value)}
           />
           <CFormTextarea
             id="description"
@@ -66,78 +95,35 @@ function AddActivity({ open, setOpen, handleAddActivity, program }) {
             placeholder="Description"
             rows={3}
             text="Must be 8-20 words long."
-            onChange={handleChange}
+            onChange={(e) => setDescription(e.target.value)}
           ></CFormTextarea>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <label htmlFor="allDay" className="form-check-label">
-                All Day Activity:
-              </label>
-              <input
-                type="checkbox"
-                id="allDay"
-                className="form-check-input"
-                checked={allDay}
-                onChange={(e) => setAllDay(e.target.checked)}
-              />
-            </div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <CFormInput
-                name="color"
-                type="color"
-                id="exampleColorInput"
-                label="Color :"
-                title="Choose your color"
-                onChange={handleChange}
-              />
-            </div>
-          </div>
 
-          {allDay ? (
-            <>
-              <CFormInput
-                label="Start Day:"
-                type="date"
-                id="startDay"
-                name="startDate"
-                placeholder="Start Day"
-                onChange={handleChange}
-              />
-              <CFormInput
-                label="End Day:"
-                type="date"
-                name="endDate"
-                id="endDay"
-                placeholder="End Day"
-                onChange={handleChange}
-              />
-            </>
-          ) : (
-            <>
-              <CFormInput
-                label="Start Date"
-                type="date"
-                id="startDate"
-                name="startDate"
-                placeholder="Start Date"
-                onChange={handleChange}
-              />
-              <CFormInput
-                label="End Date"
-                type="date"
-                id="endDate"
-                name="endDate"
-                placeholder="End Date"
-                onChange={handleChange}
-              />
-            </>
-          )}
+          <CInputGroup className="mb-3">
+            <CInputGroupText id="basic-addon2">Start Date</CInputGroupText>
+            <CFormInput
+              type="date"
+              id="start date"
+              placeholder="Enter start date"
+              value={startDate}
+              onChange={(e) => handleChangeStartDate(e.target.value)}
+            />
+          </CInputGroup>
+          <CInputGroup>
+            <CInputGroupText id="basic-addon2">End Date</CInputGroupText>
+            <CFormInput
+              type="date"
+              id="end date"
+              placeholder="Enter end date"
+              value={endDate}
+              onChange={(e) => handleChangeEndDate(e.target.value)}
+            />
+          </CInputGroup>
         </CModalBody>
         <CModalFooter>
           <CButton color="danger" onClick={() => setOpen(false)}>
             Close
           </CButton>
-          <CButton color="primary" onClick={() => handleAddActivity(activity)}>
+          <CButton color="primary" onClick={handleSubmit}>
             Add
           </CButton>
         </CModalFooter>

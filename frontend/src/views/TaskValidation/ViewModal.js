@@ -56,6 +56,9 @@ function ViewModal({ showModal, setShowModal, selectedTask, setSelectedTask }) {
             name="status"
             onChange={handleChange}
           >
+            <option value={'completed'} disabled>
+              select status
+            </option>
             <option value={'inProgress'}>inProgress</option>
             <option value={'cancelled'}>cancelled</option>
           </CFormSelect>

@@ -21,6 +21,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 const Task = ({ task }) => {
   const dispatch = useDispatch()
+  const users = useSelector((state) => state.usersSlice.users)
   const [currentTask, setCurrentTask] = useState(task)
   const [newKpiLabel, setNewKpiLabel] = useState('')
   const [newKpiValue, setNewKpiValue] = useState('')
@@ -31,9 +32,12 @@ const Task = ({ task }) => {
   const [resourceFile, setResourceFile] = useState(null)
   const [resourceFileName, setResourceFileName] = useState('')
   const [deliverableFile, setDeliverableFile] = useState(null)
-
+  const findUserName = (id) => {
+    return users.find((user) => user._id === id).username
+  }
+  const taskOwnerName = findUserName(task.taskOwner)
   const handleToggleTaskStatus = () => {
-    if (task.status === 'inProgress' && task.deliverables.length === 0) {
+    if (currentTask.status === 'inProgress' && currentTask.deliverables.length === 0) {
       alert('Please add a deliverable before changing the status')
       return
     }
@@ -147,18 +151,18 @@ const Task = ({ task }) => {
                 <div className="card-body">
                   <h5 className="card-title">Task Details</h5>
                   <p className="card-text">
-                    <strong>Task Name:</strong> {currentTask.taskName}
+                    <strong>Task Name:</strong> {task.taskName}
                   </p>
                   <p className="card-text">
-                    <strong>Task Owner:</strong> {currentTask.taskOwner}
+                    <strong>Task Owner:</strong> {taskOwnerName}
                   </p>
                   <p className="card-text">
-                    <strong>Target Date:</strong> {new Date(currentTask.targetDate).toDateString()}
+                    <strong>Target Date:</strong> {new Date(task.endDate).toDateString()}
                   </p>
                   <p className="card-text">
-                    <strong>Status:</strong> {currentTask.status}
+                    <strong>Status:</strong> {task.status}
                   </p>
-                  {task.status === 'inProgress' ? (
+                  {task.status === 'inProgress' && (
                     <CFormCheck
                       className="mb-3"
                       style={{ display: task.status === 'notStarted' ? 'none' : 'block' }}
@@ -167,7 +171,8 @@ const Task = ({ task }) => {
                       checked={task.status === 'completed' ? true : false}
                       onChange={handleToggleTaskStatus}
                     />
-                  ) : (
+                  )}
+                  {task.status === 'notStarted' && (
                     <p className=" text-center text-danger">the task not started yet</p>
                   )}
                 </div>

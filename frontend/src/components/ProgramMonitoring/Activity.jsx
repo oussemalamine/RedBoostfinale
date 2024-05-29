@@ -218,7 +218,7 @@ function Activity({ activity, tasks }) {
           </CCol>
         </CRow>
         <CRow className="mb-3">
-          <TaskStatusCard status={'notStarted'} tasks={tasks} color={'#006666'} />
+          <TaskStatusCard status={'notStarted'} tasks={tasks} color={'#3b5998'} />
           <TaskStatusCard status="inProgress" tasks={tasks} color={'#fb5858'} />
           <TaskStatusCard status={'completed'} tasks={tasks} color={'#0ca279'} />
           <TaskStatusCard status={'valid'} tasks={tasks} color={'#074a38'} />

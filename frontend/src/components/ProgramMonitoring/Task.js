@@ -33,7 +33,7 @@ const Task = ({ task }) => {
   const [deliverableFile, setDeliverableFile] = useState(null)
 
   const handleToggleTaskStatus = () => {
-    if (task.status === 'inProgress' && task.deliverables.length === 0) {
+    if (task.status === 'inProgress' && task.deliverables.length != 0) {
       alert('Please add a deliverable before changing the status')
       return
     }

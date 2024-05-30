@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import axiosInstance from '../../axiosInstance'
 import {
   createProgram,
   loadPrograms,
@@ -60,26 +61,40 @@ export default function ProgramCards() {
     fileInputRef.current.click()
   }
   // Dispatch createProgram and then loadPrograms after the program is successfully created
-  const addNewProgram = (programData) => {
-    dispatch(createProgram(programData)).then(() => {
-      dispatch(loadPrograms())
-    })
+  const addNewProgram = () => {
+    const formData = new FormData()
+    console.log('logo', logo)
+    formData.append('logo', logo)
+    axiosInstance
+      .post('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          console.log('response', response)
+          const programData = {
+            programTitle,
+            programDescription,
+            startDate,
+            endDate,
+            budget,
+            authorizedUsers: [programLead],
+            logo: `http://localhost:5000/${response.data.path}`,
+          }
+          dispatch(createProgram(programData))
+        }
+      })
+      .catch((error) => {
+        console.log('error', error)
+      })
     setVisible(false)
   }
   const handleImageChange = (e) => {
     const file = e.target.files[0]
-    const reader = new FileReader()
-
-    reader.onloadend = () => {
-      // When the reader finishes loading the file, set the image state to the result
-      setLogo(reader.result)
-      setLogoName(file.name)
-    }
-
-    if (file) {
-      // Read the file as a data URL
-      reader.readAsDataURL(file)
-    }
+    setLogo(file)
+    setLogoName(file.name)
   }
   return (
     <>
@@ -105,6 +120,7 @@ export default function ProgramCards() {
                   style={{ display: 'none' }}
                   type="file"
                   id="logo"
+                  name="logo"
                   placeholder="Enter logo"
                   onChange={handleImageChange}
                 />
@@ -183,21 +199,7 @@ export default function ProgramCards() {
             </CInputGroup>
             <CRow xs={{ cols: 'auto' }}>
               <CCol xs className="m-auto">
-                <CButton
-                  color="primary"
-                  onClick={() => {
-                    const programData = {
-                      logo,
-                      programTitle,
-                      programDescription,
-                      startDate,
-                      endDate,
-                      budget,
-                      authorizedUsers: [programLead],
-                    }
-                    addNewProgram(programData)
-                  }}
-                >
+                <CButton color="primary" onClick={addNewProgram}>
                   Add Program
                 </CButton>
               </CCol>

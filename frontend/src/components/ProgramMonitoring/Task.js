@@ -153,8 +153,14 @@ const Task = ({ task }) => {
                     <strong>Task Owner:</strong> {currentTask.taskOwner}
                   </p>
                   <p className="card-text">
-                    <strong>Target Date:</strong> {new Date(currentTask.targetDate).toDateString()}
+                    <strong>Target Date:</strong>{' '}
+                    {new Date(currentTask.targetDate).toLocaleDateString('en-US', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    })}
                   </p>
+
                   <p className="card-text">
                     <strong>Status:</strong> {currentTask.status}
                   </p>

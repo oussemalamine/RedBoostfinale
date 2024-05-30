@@ -180,7 +180,7 @@ const WidgetsDropdown = ({ className }) => {
       </CCol>
 
       <CCol sm={6} xl={4} xxl={3}>
-        <Link to="/statistics/programs" style={{ textDecoration: 'none' }}>
+        <Link to="/Dash/statistics/programs" style={{ textDecoration: 'none' }}>
           <CWidgetStatsA
             color="warning"
             value={programs.length}
@@ -235,7 +235,7 @@ const WidgetsDropdown = ({ className }) => {
       </CCol>
 
       <CCol sm={6} xl={4} xxl={3}>
-        <Link to="/statistics/sessions" style={{ textDecoration: 'none' }}>
+        <Link to="/Dash/statistics/sessions" style={{ textDecoration: 'none' }}>
           <CWidgetStatsA
             color="danger"
             value={sessions.length}

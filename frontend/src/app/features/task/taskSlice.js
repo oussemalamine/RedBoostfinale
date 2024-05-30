@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios'
+
 export const loadTask = createAsyncThunk('task/loadTask', async (taskId, { rejectWithValue }) => {
   try {
     const response = await axios.post(`http://localhost:5000/loadTask/${taskId}`)

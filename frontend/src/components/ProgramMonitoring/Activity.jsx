@@ -47,10 +47,9 @@ const TaskStatusCard = ({ status, tasks, color }) => {
           {tasks.map((task, index) => {
             if (task.status === status) {
               return (
-                <div className="container">
+                <div className="container" key={index}>
                   <div
                     onClick={() => handleModalVisibility(task)}
-                    key={index}
                     className="card border border-success shadow mb-3"
                     style={{ maxWidth: '400px' }}
                   >
@@ -61,7 +60,7 @@ const TaskStatusCard = ({ status, tasks, color }) => {
                       <div className="d-flex justify-content-between align-items-center mt-3">
                         <div className="text-muted">
                           <CIcon icon={cilCalendar} className="mr-1" />
-                          {task.endDate}
+                          {new Date(task.endDate).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
@@ -183,6 +182,16 @@ function Activity({ activity, tasks }) {
     const currentPath = window.location.pathname
     navigate(`${currentPath}/${task.taskName}`)
   }
+  const formatDate = (date) => {
+    let month = '' + (date.getMonth() + 1), // getMonth() is zero-based
+      day = '' + date.getDate(),
+      year = date.getFullYear()
+
+    if (month.length < 2) month = '0' + month
+    if (day.length < 2) day = '0' + day
+
+    return [year, month, day].join('-')
+  }
 
   return (
     <>
@@ -222,7 +231,6 @@ function Activity({ activity, tasks }) {
           <TaskStatusCard status="inProgress" tasks={tasks} color={'#fb5858'} />
           <TaskStatusCard status={'completed'} tasks={tasks} color={'#0ca279'} />
           <TaskStatusCard status={'valid'} tasks={tasks} color={'#074a38'} />
-
           <TaskStatusCard status={'expired'} tasks={tasks} color={'#dab600'} />
           <TaskStatusCard status={'cancelled'} tasks={tasks} color={'grey'} />
         </CRow>

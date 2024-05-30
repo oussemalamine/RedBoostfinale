@@ -12,6 +12,7 @@ const CreateContact = React.lazy(() => import('./views/contacts/CreateContact'))
 const Users = React.lazy(() => import('./views/users/users'))
 const TaskValidation = React.lazy(() => import('./views/TaskValidation/TaskValidation'))
 const StatisticsEntrepeneurs = React.lazy(() => import('./views/Statistics/EntrepreneurStat'))
+const ProgramsStatistics = React.lazy(()=> import('./views/Statistics/ProgramsStatistics'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Dashboard },
@@ -32,6 +33,7 @@ const routes = [
   { path: '/allContacts', name: 'All Contacts', element: allContacts },
   { path: '/Contacts/EntrepConacts', name: 'Entrepreneurs Contacts', element: EntrepConacts },
   { path: '/statistics/entrepreneurs', name: 'StatisticsEntrepeneurs', element: StatisticsEntrepeneurs },
+  { path: '/statistics/programs', name: 'StatisticsPrograms', element: ProgramsStatistics },
 ]
 
 export default routes

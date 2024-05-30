@@ -16,30 +16,27 @@ const UserProfileHeader = () => {
   const [open, setOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const dispatch = useDispatch()
-  
-    const updateUserLogs = async (updatedLogs) => {
-      try {
-        const response = await axiosInstance.put(`/users/${user._id}`, {
-          logs: updatedLogs,
-        })
 
-        if (response.data) {
-          console.log('Logs Updated')
-        } else {
-          console.log('Error in updating Logs')
-        }
-      } catch (error) {
-        console.error('Error updating Logs:', error)
+  const updateUserLogs = async (updatedLogs) => {
+    try {
+      const response = await axiosInstance.put(`/users/${user._id}`, {
+        logs: updatedLogs,
+      })
+
+      if (response.data) {
+        console.log('Logs Updated')
+      } else {
+        console.log('Error in updating Logs')
       }
+    } catch (error) {
+      console.error('Error updating Logs:', error)
     }
+  }
 
-
- 
   const handleConfirmPhoto = async () => {
     try {
       const formData = new FormData()
-      formData.append('image', image) // Assuming image is a File object obtained from input[type=file]
-      console.log('formData :', formData)
+      formData.append('image', image)
       const response = await axiosInstance.put(`/users/${user._id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -50,9 +47,15 @@ const UserProfileHeader = () => {
         console.log('User photo updated successfully:', response.data)
         const updatedUser = { ...user, image: response.data.image }
         const currentDate = new Date().toLocaleDateString()
-        const updatedLogs = [...updatedUser.logs, {date: currentDate, events: [`User update image at ${new Date().toLocaleTimeString()}`]}]
-          updateUserLogs(updatedLogs)
-          dispatch(setUserData({ ...updatedUser,logs: updatedLogs }))
+        const updatedLogs = [
+          ...updatedUser.logs,
+          {
+            date: currentDate,
+            events: [`User update image at ${new Date().toLocaleTimeString()}`],
+          },
+        ]
+        updateUserLogs(updatedLogs)
+        dispatch(setUserData({ ...updatedUser, logs: updatedLogs }))
       } else {
         console.error('Failed to update user photo:', response.statusText)
       }
@@ -88,11 +91,7 @@ const UserProfileHeader = () => {
   return (
     <>
       <Modal setImage={setImage} visible={visible} setVisible={setVisible} />
-      <EditProfileModal
-        user={user}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-      />
+      <EditProfileModal user={user} isOpen={isOpen} setIsOpen={setIsOpen} />
       {/* <EditModal setOpen={setOpen} /> */}
       <CCard className="text-center mb-3">
         <CCardHeader className="bg-dark text-light">Profile Header</CCardHeader>

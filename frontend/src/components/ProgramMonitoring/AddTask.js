@@ -78,6 +78,11 @@ function AddTask({ open, setOpen, handleAddTask, activity }) {
       setOpen(false)
     }
   }
+
+  const formatDate = (dateString) => {
+    const [year, month, day] = dateString.split('-')
+    return `${day}/${month}/${year}`
+  }
   return (
     <>
       <CModal
@@ -107,7 +112,7 @@ function AddTask({ open, setOpen, handleAddTask, activity }) {
               id="start date"
               placeholder="Enter start date"
               value={startDate}
-              onChange={(e) => handleChangeStartDate(e.target.value)}
+              onChange={(e) => setStartDate(e.target.value)}
             />
           </CInputGroup>
           <CInputGroup className="mb-3">
@@ -117,7 +122,7 @@ function AddTask({ open, setOpen, handleAddTask, activity }) {
               id="end date"
               placeholder="Enter end date"
               value={endDate}
-              onChange={(e) => handleChangeEndDate(e.target.value)}
+              onChange={(e) => setEndDate(e.target.value)}
             />
           </CInputGroup>
           <CInputGroup className="mb-3">

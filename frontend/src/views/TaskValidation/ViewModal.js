@@ -7,26 +7,49 @@ import {
   CModalFooter,
   CButton,
   CFormInput,
-  CFormTextarea,
   CFormSelect,
 } from '@coreui/react'
-import formatDate from '../../components/CustomFunctions'
 import { useDispatch } from 'react-redux'
-import { loadTasks, updateTask } from '../../app/features/task/taskSlice'
+import { deleteTask, updateTask } from '../../app/features/task/taskSlice'
+
 function ViewModal({ showModal, setShowModal, selectedTask, setSelectedTask }) {
-  console.log('selectedTask :', selectedTask)
   const dispatch = useDispatch()
+
   const handleChange = (e) => {
     const { name, value } = e.target
     const updatedTask = { ...selectedTask, [name]: value }
     setSelectedTask(updatedTask)
   }
+
   const handleSubmit = () => {
     const { _id, ...taskData } = selectedTask
-    console.log('taskID', _id)
     dispatch(updateTask({ taskId: _id, taskData }))
     setShowModal(false)
   }
+
+  const handleDelete = () => {
+    dispatch(deleteTask(selectedTask._id))
+    setShowModal(false)
+  }
+
+  const handleValidate = () => {
+    dispatch(
+      updateTask({ taskId: selectedTask._id, taskData: { ...selectedTask, status: 'valid' } }),
+    )
+    setShowModal(false)
+  }
+
+  const isValidDate = (date) => {
+    return !isNaN(Date.parse(date))
+  }
+
+  const formatDate = (date) => {
+    if (isValidDate(date)) {
+      return new Date(date).toISOString().substring(0, 10)
+    }
+    return '' // Fallback for invalid date
+  }
+
   return (
     <CModal
       visible={showModal}
@@ -47,6 +70,7 @@ function ViewModal({ showModal, setShowModal, selectedTask, setSelectedTask }) {
             aria-describedby="taskTitleHelpInline"
             value={selectedTask.taskName}
             onChange={handleChange}
+            disabled // Make the input field disabled
           />
         </div>
         <div className="mb-3">
@@ -55,54 +79,71 @@ function ViewModal({ showModal, setShowModal, selectedTask, setSelectedTask }) {
             id="taskStatus"
             name="status"
             onChange={handleChange}
+            className={selectedTask.status === 'valid' ? 'status-valid' : selectedTask.status === 'completed' ? 'status-completed' : ''}
           >
-            <option value={'inProgress'}>inProgress</option>
-            <option value={'cancelled'}>cancelled</option>
+            <option value="inProgress">In Progress</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="completed">Completed</option>
+            <option value="valid">Validated</option>
           </CFormSelect>
         </div>
         <div className="mb-3">
           <CFormInput
-            value={formatDate(new Date(selectedTask.endDate))}
+            value={formatDate(selectedTask.targetDate)}
             type="date"
             name="targetDate"
             id="taskDate"
             placeholder="Task Date"
             onChange={handleChange}
+            disabled // Make the input field disabled
           />
         </div>
         <div className="mb-3">
+          <label htmlFor="xpPoints" className="form-label">
+            Enter your XP points score !!!!
+          </label>
           <CFormInput
             value={selectedTask.xpPoints}
             type="number"
             name="xpPoints"
             id="xpPoints"
-            placeholder="xpPoints"
+            placeholder="XP Points"
             onChange={handleChange}
           />
         </div>
         <div className="mb-3">
           <h5>Task Evidence</h5>
-          {selectedTask.deliverables && selectedTask.deliverables.length > 0 ? (
-            <ul>
-              {selectedTask.deliverables.map((attachment, index) => (
-                <li key={index}>
-                  <a href={attachment.fileUrl} target="_blank" rel="noopener noreferrer">
-                    {attachment.fileName}
-                  </a>
-                </li>
-              ))}
-            </ul>
+          {selectedTask.deliverables ? (
+            selectedTask.deliverables.length > 0 ? (
+              <ul>
+                {selectedTask.deliverables.map((attachment, index) => (
+                  <li key={index}>
+                    <a href={attachment.fileUrl} target="_blank" rel="noopener noreferrer">
+                      {attachment.fileName}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No attachments found.</p>
+            )
           ) : (
-            <p>No attachments found.</p>
+            <p>Couldn't access the deliverables of this task.</p>
           )}
         </div>
       </CModalBody>
       <CModalFooter>
-        <CButton color="danger" onClick={() => setShowModal(false)}>
+        <CButton color="danger" onClick={handleDelete}>
+          Delete
+        </CButton>
+        <CButton color="secondary" onClick={() => setShowModal(false)}>
           Close
         </CButton>
         <CButton color="primary" onClick={handleSubmit}>
-          Edit
+          Save
+        </CButton>
+        <CButton color="success" onClick={handleValidate}>
+          Validate
         </CButton>
       </CModalFooter>
     </CModal>

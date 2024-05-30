@@ -7,6 +7,18 @@ const bodyParser = require("body-parser"); // Import body-parser
 const passport = require("passport");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Destination folder
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + "-" + Date.now()); // Naming the file
+  },
+});
+const upload = multer({
+  storage: storage,
+});
 const db = process.env.DATABASE_URI;
 const secret = process.env.SECRET;
 const PORT = process.env.PORT || 5000; //this is can be changed careful with it !!!!!!!!!!
@@ -27,8 +39,8 @@ const handleProgram = require("./routes/api/handleProgram");
 const handleActivity = require("./routes/api/handleActivity");
 const hundleEntrepreneur = require("./routes/api/hundleEntrepreneur");
 const handleStartups = require("./routes/api/handleStartups");
-const handleTask = require("./routes/api/handleTask")
-const sessionsRoute = require("./routes/api/Sessions")
+const handleTask = require("./routes/api/handleTask");
+const sessionsRoute = require("./routes/api/Sessions");
 require("./passport/index");
 
 // Increase payload size limit for body-parser
@@ -76,7 +88,26 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+//configure the server to serve statically the files from the backend server with no sniff
+app.use(
+  "/uploads",
+  express.static("uploads", {
+    setHeaders: (res, path) => {
+      res.setHeader("X-Content-Type-Options", "nosniff");
+    },
+  })
+);
+
 // Routes
+app.post("/upload", upload.single("logo"), (req, res) => {
+  // 'logo' is the name of the form field in your frontend
+  if (req.file) {
+    // Handle the file information and reference in the database here
+    res.status(200).send(req.file);
+  } else {
+    res.status(400).send({ message: "File upload failed" });
+  }
+});
 app.post("/register", signupRoute);
 app.post("/login", loginRoute);
 app.post("/events", AddEvent);
@@ -110,7 +141,7 @@ app.delete("/deleteTask/:taskId", handleTask);
 app.put("/updateTask/:taskId", handleTask);
 app.post("/loadTasks", handleTask);
 app.post("/loadTasksByActivityId/:activityId", handleTask);
-app.get("/sessions",sessionsRoute)
+app.get("/sessions", sessionsRoute);
 // Database + Server Connection Validation
 mongoose
   .connect(db)

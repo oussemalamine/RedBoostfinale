@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import axiosInstance from '../../axiosInstance'
-import {
-  createProgram,
-  loadPrograms,
-  updateProgram,
-  deleteProgram,
-} from '../../app/features/programs/programsSlice'
+import { createProgram } from '../../app/features/programs/programsSlice'
 import { ProgramCard } from '../../components/ProgramCard'
 import {
   CRow,
@@ -28,7 +23,7 @@ import {
   CInputGroupText,
   CFormTextarea,
 } from '@coreui/react'
-
+const MAX_FILE_SIZE = 2097152 // 2 MB
 export default function ProgramCards() {
   const dispatch = useDispatch()
   const users = useSelector((state) => state.usersSlice.users)
@@ -62,11 +57,23 @@ export default function ProgramCards() {
   }
   // Dispatch createProgram and then loadPrograms after the program is successfully created
   const addNewProgram = () => {
+    if (
+      logo === null ||
+      programTitle === '' ||
+      programDescription === '' ||
+      startDate === '' ||
+      endDate === '' ||
+      budget === '' ||
+      programLead === ''
+    ) {
+      alert('Please fill all the fields')
+      return
+    }
     const formData = new FormData()
     console.log('logo', logo)
     formData.append('logo', logo)
     axiosInstance
-      .post('/upload', formData, {
+      .post('/uploadLogo', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -93,6 +100,10 @@ export default function ProgramCards() {
   }
   const handleImageChange = (e) => {
     const file = e.target.files[0]
+    if (file && file.size > MAX_FILE_SIZE) {
+      alert('File size exceeds the maximum limit of 2MB')
+      return
+    }
     setLogo(file)
     setLogoName(file.name)
   }

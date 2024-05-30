@@ -7,6 +7,7 @@ const bodyParser = require("body-parser"); // Import body-parser
 const passport = require("passport");
 const cors = require("cors");
 const mongoose = require("mongoose");
+//multer config
 const multer = require("multer");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -19,6 +20,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
 });
+// Connect to MongoDB
 const db = process.env.DATABASE_URI;
 const secret = process.env.SECRET;
 const PORT = process.env.PORT || 5000; //this is can be changed careful with it !!!!!!!!!!
@@ -99,7 +101,10 @@ app.use(
 );
 
 // Routes
-app.post("/upload", upload.single("logo"), (req, res) => {
+
+//fares:you can add different uploads logic here
+//this upload is for uploading a single file which is the logo
+app.post("/uploadLogo", upload.single("logo"), (req, res) => {
   // 'logo' is the name of the form field in your frontend
   if (req.file) {
     // Handle the file information and reference in the database here

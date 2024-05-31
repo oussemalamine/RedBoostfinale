@@ -10,7 +10,7 @@ import {
   CFormSelect,
 } from '@coreui/react'
 import { useDispatch } from 'react-redux'
-import { deleteTask, updateTask } from '../../app/features/task/taskSlice'
+import { deleteTask, updateTask,loadTask } from '../../app/features/task/taskSlice'
 
 function ViewModal({ showModal, setShowModal, selectedTask, setSelectedTask }) {
   const dispatch = useDispatch()
@@ -113,6 +113,44 @@ function ViewModal({ showModal, setShowModal, selectedTask, setSelectedTask }) {
         </div>
         <div className="mb-3">
           <h5>Task Evidence</h5>
+          <div className='Kpis'><h6>Kpi's</h6>
+          {selectedTask.kpis ? (
+            selectedTask.kpis.length > 0 ? (
+              <ul>
+                {selectedTask.kpis.map((attachment, index) => (
+                  <li key={index}>
+                    <a target="_blank" rel="noopener noreferrer">
+                      {attachment.label} = {attachment.count}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No attachments found.</p>
+            )
+          ) : (
+            <p>Couldn't access the kpi's of this task.</p>
+          )}</div>
+          <div className='Reports'><h6>Reports</h6>
+          {selectedTask.reports ? (
+            selectedTask.reports.length > 0 ? (
+              <ul>
+                {selectedTask.reports.map((attachment, index) => (
+                  <li key={index}>
+                    <a target="_blank" rel="noopener noreferrer">
+                      {attachment.label} = {attachment.count}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No attachments found.</p>
+            )
+          ) : (
+            <p>Couldn't access the reports of this task.</p>
+          )}</div>
+          <div className='Deliverables'>
+          <h6>Deliverables</h6>
           {selectedTask.deliverables ? (
             selectedTask.deliverables.length > 0 ? (
               <ul>
@@ -130,6 +168,7 @@ function ViewModal({ showModal, setShowModal, selectedTask, setSelectedTask }) {
           ) : (
             <p>Couldn't access the deliverables of this task.</p>
           )}
+          </div>
         </div>
       </CModalBody>
       <CModalFooter>

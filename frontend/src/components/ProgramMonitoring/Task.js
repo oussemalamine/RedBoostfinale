@@ -38,22 +38,39 @@ const Task = ({ task }) => {
       alert('Please add a deliverable before changing the status')
       return
     }
+  
+    let updatedStatusMessage = ''
+    if (task.status === 'completed') {
+      updatedStatusMessage = 'Task completed'
+    } else {
+      updatedStatusMessage = 'Task in progress'
+    }
+  
     const updatedTask = {
       ...task,
       status: task.status === 'completed' ? 'inProgress' : 'completed',
     }
+  
     dispatch(
       updateTask({
         taskId: task._id,
         taskData: updatedTask,
       }),
     )
+  
+    setCurrentTask(updatedTask)
+    setStatusMessage(updatedStatusMessage) // Assuming you have a state variable for status message
   }
-
+  
   const notifyError = (field) => {
     toast.error(`The ${field} field is required.`, {
       autoClose: 3000,
     })
+  }
+  const handleDownload = (fileUrl) => {
+    // You can implement the download functionality here
+    // For example, you can use JavaScript's window.open() method to open the file URL in a new tab
+    window.open(fileUrl, '_blank')
   }
 
   const handleAddKpi = () => {
@@ -201,7 +218,7 @@ const Task = ({ task }) => {
                       onChange={handleToggleTaskStatus}
                     />
                   ) : (
-                    <p className=" text-center text-danger">the task not started yet</p>
+                    <p className=" text-center text-success">this Task is {currentTask.status}</p>
                   )}
                 </div>
               </div>
@@ -302,7 +319,7 @@ const Task = ({ task }) => {
               <CListGroup>
                 {currentTask.deliverables.map((deliverable, index) => (
                   <CListGroupItem key={index}>
-                    <CButton href={deliverable.url} download color="link">
+                    <CButton onClick={() => handleDownload(deliverable.fileUrl)} color="link">
                       {deliverable.fileName}
                     </CButton>
                   </CListGroupItem>

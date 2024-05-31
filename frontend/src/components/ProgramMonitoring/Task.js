@@ -11,14 +11,17 @@ import {
   CFormInput,
   CFormCheck,
   CFormTextarea,
+  CForm,
 } from '@coreui/react'
 import { updateTask } from '../../app/features/task/taskSlice'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import CommentSection from './CommentSection'
 import img from '../Images/details.webp'
 import { IoClose } from 'react-icons/io5'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import axios from 'axios'
+
 const Task = ({ task }) => {
   const dispatch = useDispatch()
   const [currentTask, setCurrentTask] = useState(task)
@@ -28,8 +31,6 @@ const Task = ({ task }) => {
   const [newRapportTitle, setNewRapportTitle] = useState('')
   const [newRapportText, setNewRapportText] = useState('')
   const [newComment, setNewComment] = useState('')
-  const [resourceFile, setResourceFile] = useState(null)
-  const [resourceFileName, setResourceFileName] = useState('')
   const [deliverableFile, setDeliverableFile] = useState(null)
 
   const handleToggleTaskStatus = () => {
@@ -48,11 +49,13 @@ const Task = ({ task }) => {
       }),
     )
   }
+
   const notifyError = (field) => {
     toast.error(`The ${field} field is required.`, {
       autoClose: 3000,
     })
   }
+
   const handleAddKpi = () => {
     if (newKpiLabel === '') {
       return notifyError('Kpi Label')
@@ -72,30 +75,55 @@ const Task = ({ task }) => {
     setCurrentTask(updatedTask)
   }
 
-  const handleAddDeliverable = () => {
+  const handleAddDeliverable = async (e) => {
+    e.preventDefault()
     if (newDeliverableName === '') {
       return notifyError('Deliverable Name')
     }
 
-    const updatedTask = {
-      ...task,
-      deliverables: [
-        ...task.deliverables,
-        {
-          fileName: newDeliverableName ? newDeliverableName : deliverableFile.name,
-          fileUrl: deliverableFile,
-        },
-      ],
+    if (!deliverableFile) {
+      return notifyError('Deliverable File')
     }
-    dispatch(
-      updateTask({
-        taskId: task._id,
-        taskData: updatedTask,
-      }),
-    )
-    setCurrentTask(updatedTask)
-  }
 
+    try {
+      const formData = new FormData()
+      formData.append('deliverableFile', deliverableFile)
+
+      console.log('Uploading file:', deliverableFile) // Debugging log
+
+      const response = await axios.post('http://localhost:5000/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+
+      console.log('Upload response:', response.data) // Debugging log
+
+      const updatedTask = {
+        ...task,
+        deliverables: [
+          ...task.deliverables,
+          {
+            fileName: newDeliverableName ? newDeliverableName : deliverableFile.name,
+            fileUrl: response.data.filePath,
+          },
+        ],
+      }
+
+      dispatch(
+        updateTask({
+          taskId: task._id,
+          taskData: updatedTask,
+        }),
+      )
+      setCurrentTask(updatedTask)
+      setNewDeliverableName('')
+      setDeliverableFile(null)
+    } catch (error) {
+      console.error('Error uploading file:', error) // Debugging log
+      toast.error('Failed to upload file. Please try again.')
+    }
+  }
   const handleAddRapport = () => {
     if (newRapportTitle === '') {
       return notifyError('Rapport Title')
@@ -126,10 +154,9 @@ const Task = ({ task }) => {
       }),
     )
   }
+
   const getColorByIndex = (index) => {
     const colors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark']
-
-    // Use modulo to cycle through colors based on index
     return colors[index % colors.length]
   }
 
@@ -217,8 +244,6 @@ const Task = ({ task }) => {
                     justifyContent: 'center',
                   }}
                 >
-                  {' '}
-                  {/* Wrapper div with flex properties */}
                   {currentTask.kpis.map((kpi, index) => (
                     <div
                       key={index}
@@ -283,27 +308,34 @@ const Task = ({ task }) => {
                   </CListGroupItem>
                 ))}
                 <CListGroupItem>
-                  <label htmlFor="newDeliverableName">Name:</label>
-                  <CFormInput
-                    id="newDeliverableName"
-                    placeholder="Deliverable Name"
-                    value={newDeliverableName}
-                    onChange={(e) => setNewDeliverableName(e.target.value)}
-                  />
-                  <label htmlFor="newDeliverableFile" className="mt-3 mb-3">
-                    Upload File:
-                  </label>
-                  <input
-                    id="newDeliverableFile"
-                    type="file"
-                    onChange={(e) => setDeliverableFile(e.target.files[0])}
-                  />
-                  <CButton
-                    style={{ backgroundColor: '#00cc99' }}
-                    onClick={() => handleAddDeliverable()}
-                  >
-                    Add Deliverable
-                  </CButton>
+                  <CForm onSubmit={handleAddDeliverable}>
+                    <label htmlFor="newDeliverableName">Name:</label>
+                    <CFormInput
+                      id="newDeliverableName"
+                      placeholder="Deliverable Name"
+                      value={newDeliverableName}
+                      onChange={(e) => setNewDeliverableName(e.target.value)}
+                    />
+                    <label htmlFor="newDeliverableFile" className="mt-3 mb-3">
+                      Upload File:
+                    </label>
+                    <input
+                      id="newDeliverableFile"
+                      name="deliverableFile" // Ensure this name matches the one expected by Multer
+                      type="file"
+                      onChange={(e) => {
+                        console.log('Selected deliverable file:', e.target.files[0])
+                        setDeliverableFile(e.target.files[0])
+                      }}
+                    />
+                    <CButton
+                      style={{ backgroundColor: '#00cc99' }}
+                      type="submit"
+                      className="mt-3 mb-3"
+                    >
+                      Add Deliverable
+                    </CButton>
+                  </CForm>
                 </CListGroupItem>
               </CListGroup>
             </CCardBody>

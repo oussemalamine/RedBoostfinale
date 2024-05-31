@@ -1,5 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { createAsyncThunk } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios'
 
 export const loadTask = createAsyncThunk('task/loadTask', async (taskId, { rejectWithValue }) => {
@@ -15,7 +14,7 @@ export const createTask = createAsyncThunk(
   'task/addTask',
   async (taskData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`http://localhost:5000/addTask`,taskData)
+      const response = await axios.post(`http://localhost:5000/addTask`, taskData)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response.data)
@@ -58,24 +57,28 @@ export const loadTasksByActivityId = createAsyncThunk(
 
 export const updateTask = createAsyncThunk(
   'task/updateTask',
-  async ({taskId, taskData }, { rejectWithValue }) => {
+  async ({ taskId, taskData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`http://localhost:5000/updateTask/${taskId}`, taskData);
-      return response.data;
+      console.log('Updating task with ID:', taskId)
+      console.log('Task data:', taskData)
+      const response = await axios.put(`http://localhost:5000/updateTask/${taskId}`, taskData)
+      console.log('Update response:', response.data)
+      return response.data
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      console.error('Error updating task:', error.response.data)
+      return rejectWithValue(error.response.data)
     }
-  }
-);
+  },
+)
 
-const taskSLice = createSlice({
+const taskSlice = createSlice({
   name: 'task',
   initialState: {
-    allTasks: [], //when loading all the tasks
+    allTasks: [], // when loading all the tasks
     status: 'idle',
     error: null,
     tasksByActivityId: [],
-    task: {}, //when dealing with a single task
+    task: {}, // when dealing with a single task
   },
   extraReducers: (builder) => {
     builder
@@ -103,7 +106,7 @@ const taskSLice = createSlice({
       })
       .addCase(deleteTask.fulfilled, (state, action) => {
         state.allTasks = state.allTasks.filter((task) => task._id !== action.payload)
-        console.log("action :",action.payload)
+        console.log('Deleted task ID:', action.payload)
         state.tasksByActivityId = state.tasksByActivityId.filter(
           (task) => task._id !== action.payload,
         )
@@ -116,6 +119,7 @@ const taskSLice = createSlice({
         state.status = 'loading'
       })
       .addCase(updateTask.fulfilled, (state, action) => {
+        console.log('Task updated successfully:', action.payload)
         state.task = action.payload
         state.status = 'succeeded'
         state.allTasks = state.allTasks.map((task) => {
@@ -132,10 +136,12 @@ const taskSLice = createSlice({
         })
       })
       .addCase(updateTask.rejected, (state, action) => {
+        console.error('Task update failed:', action.error.message)
         state.status = 'failed'
         state.error = action.error.message
       })
       .addCase(updateTask.pending, (state) => {
+        console.log('Task update pending...')
         state.status = 'loading'
       })
       .addCase(loadTask.fulfilled, (state, action) => {
@@ -161,4 +167,4 @@ const taskSLice = createSlice({
   },
 })
 
-export default taskSLice.reducer
+export default taskSlice.reducer

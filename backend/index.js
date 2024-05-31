@@ -98,6 +98,18 @@ app.use(
   })
 );
 
+app.post('/upload', upload.single('deliverableFile'), (req, res) => {
+  console.log('File received:', req.file); // Debugging log
+
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+  res.status(200).send({
+    fileName: req.file.filename,
+    filePath: `/uploads/${req.file.filename}`,
+  });
+});
+
 // Routes
 app.post("/upload", upload.single("logo"), (req, res) => {
   // 'logo' is the name of the form field in your frontend

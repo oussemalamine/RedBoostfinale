@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CCard,
   CCardBody,
@@ -32,44 +32,49 @@ const Task = ({ task }) => {
   const [newRapportText, setNewRapportText] = useState('')
   const [newComment, setNewComment] = useState('')
   const [deliverableFile, setDeliverableFile] = useState(null)
+  const [statusMessage, setStatusMessage] = useState(task.status === 'completed' ? 'Task completed' : 'Task in progress')
+
+  useEffect(() => {
+    console.log("Task Prop:", task) // Debugging log
+    console.log("Current Task:", currentTask); // Debugging log
+  }, [task, currentTask])
 
   const handleToggleTaskStatus = () => {
     if (task.status === 'inProgress' && task.deliverables.length === 0) {
       alert('Please add a deliverable before changing the status')
       return
     }
-  
+
     let updatedStatusMessage = ''
     if (task.status === 'completed') {
-      updatedStatusMessage = 'Task completed'
-    } else {
       updatedStatusMessage = 'Task in progress'
+    } else {
+      updatedStatusMessage = 'Task completed'
     }
-  
+
     const updatedTask = {
       ...task,
       status: task.status === 'completed' ? 'inProgress' : 'completed',
     }
-  
+
     dispatch(
       updateTask({
         taskId: task._id,
         taskData: updatedTask,
       }),
     )
-  
+
     setCurrentTask(updatedTask)
-    setStatusMessage(updatedStatusMessage) // Assuming you have a state variable for status message
+    setStatusMessage(updatedStatusMessage)
   }
-  
+
   const notifyError = (field) => {
     toast.error(`The ${field} field is required.`, {
       autoClose: 3000,
     })
   }
+
   const handleDownload = (fileUrl) => {
-    // You can implement the download functionality here
-    // For example, you can use JavaScript's window.open() method to open the file URL in a new tab
     window.open(fileUrl, '_blank')
   }
 
@@ -141,6 +146,7 @@ const Task = ({ task }) => {
       toast.error('Failed to upload file. Please try again.')
     }
   }
+
   const handleAddRapport = () => {
     if (newRapportTitle === '') {
       return notifyError('Rapport Title')
@@ -177,6 +183,21 @@ const Task = ({ task }) => {
     return colors[index % colors.length]
   }
 
+  const isValidDate = (date) => {
+    return !isNaN(Date.parse(date))
+  }
+
+  const formatDate = (date) => {
+    if (isValidDate(date)) {
+      return new Date(date).toLocaleDateString('en-US', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    }
+    return '' // Fallback for invalid date
+  }
+
   return (
     <>
       <ToastContainer />
@@ -198,11 +219,7 @@ const Task = ({ task }) => {
                   </p>
                   <p className="card-text">
                     <strong>Target Date:</strong>{' '}
-                    {new Date(currentTask.targetDate).toLocaleDateString('en-US', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                    })}
+                    {currentTask.targetDate ? formatDate(currentTask.targetDate) : 'No target date set'}
                   </p>
 
                   <p className="card-text">

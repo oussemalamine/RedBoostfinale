@@ -109,7 +109,7 @@ const Task = ({ task }) => {
 
     try {
       const formData = new FormData()
-      formData.append('deliverableFile', deliverableFile)
+      formData.append('file', deliverableFile)
 
       console.log('Uploading file:', deliverableFile) // Debugging log
 
@@ -127,7 +127,7 @@ const Task = ({ task }) => {
           ...task.deliverables,
           {
             fileName: newDeliverableName ? newDeliverableName : deliverableFile.name,
-            fileUrl: response.data.filePath,
+            fileUrl: response.data.secure_url, 
           },
         ],
       }
@@ -374,6 +374,7 @@ const Task = ({ task }) => {
               </CListGroup>
             </CCardBody>
           </CCard>
+
 
           <CCard className="mt-3 mb-3">
             <CCardHeader className="bg-info text-light">Reporting Section</CCardHeader>

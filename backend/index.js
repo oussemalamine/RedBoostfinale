@@ -6,23 +6,23 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser"); // Import body-parser
 const passport = require("passport");
 const cors = require("cors");
+const path = require("path");
+const cloudinary = require("cloudinary").v2;
+const helmet = require("helmet");
 const mongoose = require("mongoose");
-const multer = require("multer");
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Destination folder
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + "-" + Date.now()); // Naming the file
-  },
-});
-const upload = multer({
-  storage: storage,
-});
+
+
+// Connect to MongoDB
 const db = process.env.DATABASE_URI;
 const secret = process.env.SECRET;
 const PORT = process.env.PORT || 5000; //this is can be changed careful with it !!!!!!!!!!
 const app = express();
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 const signupRoute = require("./routes/api/register");
 const loginRoute = require("./routes/api/login");
 const checkAuthRoute = require("./routes/api/checkAuth");
@@ -85,41 +85,65 @@ app.use(
   })
 );
 
+// Cloudinary file upload route
+app.post("/upload", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send({ message: "No file uploaded" });
+  }
+
+  cloudinary.uploader.upload(
+    req.file.path,
+    { resource_type: "auto" },
+    (error, result) => {
+      if (error) {
+        console.error("Upload error:", error);
+        return res.status(500).send({ message: "Upload failed", error });
+      }
+      res.status(200).send(result);
+    }
+  );
+});
+
+
+
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(helmet());
 
-//configure the server to serve statically the files from the backend server with no sniff
-app.use(
-  "/uploads",
-  express.static("uploads", {
-    setHeaders: (res, path) => {
-      res.setHeader("X-Content-Type-Options", "nosniff");
-    },
-  })
-);
-
-app.post('/upload', upload.single('deliverableFile'), (req, res) => {
-  console.log('File received:', req.file); // Debugging log
-
+// Cloudinary file upload route
+app.post("/uploadLogo", upload.single("logo"), (req, res) => {
   if (!req.file) {
-    return res.status(400).send('No file uploaded.');
+    return res.status(400).send({ message: "No file uploaded" });
   }
-  res.status(200).send({
-    fileName: req.file.filename,
-    filePath: `/uploads/${req.file.filename}`,
-  });
+
+  cloudinary.uploader.upload(
+    req.file.path,
+    { resource_type: "auto" },
+    (error, result) => {
+      if (error) {
+        console.error("Upload error:", error);
+        return res.status(500).send({ message: "Upload failed", error });
+      }
+      res.status(200).send(result);
+    }
+  );
 });
 
-// Routes
-app.post("/upload", upload.single("logo"), (req, res) => {
-  // 'logo' is the name of the form field in your frontend
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, "../frontend/build")));
+
+// Log incoming requests
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  console.log("Request body:", req.body);
   if (req.file) {
-    // Handle the file information and reference in the database here
-    res.status(200).send(req.file);
-  } else {
-    res.status(400).send({ message: "File upload failed" });
+    console.log("Files:", req.file);
   }
+  next();
 });
+
+
 app.post("/register", signupRoute);
 app.post("/login", loginRoute);
 app.post("/events", AddEvent);
@@ -154,6 +178,18 @@ app.put("/updateTask/:taskId", handleTask);
 app.post("/loadTasks", handleTask);
 app.post("/loadTasksByActivityId/:activityId", handleTask);
 app.get("/sessions", sessionsRoute);
+
+// The "catchall" handler: for any request that doesn't match one above, send back index.html
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send({ message: "Something went wrong", error: err });
+});
+
 // Database + Server Connection Validation
 mongoose
   .connect(db)

@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import axiosInstance from '../../axiosInstance'
-import {
-  createProgram,
-  loadPrograms,
-  updateProgram,
-  deleteProgram,
-} from '../../app/features/programs/programsSlice'
+import { createProgram } from '../../app/features/programs/programsSlice'
 import { ProgramCard } from '../../components/ProgramCard'
 import {
   CRow,
@@ -28,7 +23,7 @@ import {
   CInputGroupText,
   CFormTextarea,
 } from '@coreui/react'
-
+const MAX_FILE_SIZE = 2097152 // 2 MB
 export default function ProgramCards() {
   const dispatch = useDispatch()
   const users = useSelector((state) => state.usersSlice.users)
@@ -62,37 +57,54 @@ export default function ProgramCards() {
   }
   // Dispatch createProgram and then loadPrograms after the program is successfully created
   const addNewProgram = () => {
+    if (
+      logo === null ||
+      programTitle === '' ||
+      programDescription === '' ||
+      startDate === '' ||
+      endDate === '' ||
+      budget === '' ||
+      programLead === ''
+    ) {
+      alert('Please fill all the fields')
+      return
+    }
     const formData = new FormData()
     console.log('logo', logo)
     formData.append('logo', logo)
     axiosInstance
-      .post('/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          console.log('response', response)
-          const programData = {
-            programTitle,
-            programDescription,
-            startDate,
-            endDate,
-            budget,
-            authorizedUsers: [programLead],
-            logo: `http://localhost:5000/${response.data.path}`,
-          }
-          dispatch(createProgram(programData))
-        }
-      })
-      .catch((error) => {
-        console.log('error', error)
-      })
+  .post('/uploadLogo', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+  .then((response) => {
+    if (response.status === 200) {
+      console.log('response', response)
+      const programData = {
+        programTitle,
+        programDescription,
+        startDate,
+        endDate,
+        budget,
+        authorizedUsers: [programLead],
+        logo: response.data.secure_url,
+      }
+      dispatch(createProgram(programData))
+    }
+  })
+  .catch((error) => {
+    console.log('error', error)
+  })
+
     setVisible(false)
   }
   const handleImageChange = (e) => {
     const file = e.target.files[0]
+    if (file && file.size > MAX_FILE_SIZE) {
+      alert('File size exceeds the maximum limit of 2MB')
+      return
+    }
     setLogo(file)
     setLogoName(file.name)
   }
@@ -212,7 +224,7 @@ export default function ProgramCards() {
         <CButton
           className=" mb-3"
           color="primary"
-          style={currentUser.role === 'super Admin' ? {} : { display: 'none' }}
+          style={currentUser.role === 'superAdmin' ? {} : { display: 'none' }}
           onClick={() => setVisible(!visible)}
         >
           Add Program

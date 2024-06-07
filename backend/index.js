@@ -3,25 +3,30 @@ const express = require("express");
 const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
 const cookieParser = require("cookie-parser");
-const bodyParser = require("body-parser"); // Import body-parser
+const bodyParser = require("body-parser");
 const passport = require("passport");
 const cors = require("cors");
 const path = require("path");
 const cloudinary = require("cloudinary").v2;
 const helmet = require("helmet");
 const mongoose = require("mongoose");
-
+const multer = require("multer"); // Import multer
 
 // Connect to MongoDB
 const db = process.env.DATABASE_URI;
 const secret = process.env.SECRET;
-const PORT = process.env.PORT || 5000; //this is can be changed careful with it !!!!!!!!!!
+const PORT = process.env.PORT || 5000;
 const app = express();
+
+// Cloudinary configuration
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+// Multer setup for file uploads
+const upload = multer({ dest: "uploads/" }); // Define multer upload middleware
 
 const signupRoute = require("./routes/api/register");
 const loginRoute = require("./routes/api/login");
@@ -47,7 +52,7 @@ require("./passport/index");
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json({ limit: "50mb" })); // Set a higher limit for JSON requests
+app.use(bodyParser.json({ limit: "50mb" }));
 
 app.use(
   cors({
@@ -61,6 +66,7 @@ const store = new MongoDBSession({
   uri: db,
   collection: "sessions",
 });
+
 // Add event listeners to the store
 store.on("connected", () => {
   console.log("Session store connected!");
@@ -69,6 +75,7 @@ store.on("connected", () => {
 store.on("error", (error) => {
   console.error("Session store error:", error);
 });
+
 app.use(
   session({
     key: "sessionId",
@@ -80,12 +87,11 @@ app.use(
       secure: false,
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
-      // maxAge: 30 * 1000,
     },
   })
 );
 
-// Cloudinary file upload route
+// Cloudinary file upload routes
 app.post("/upload", upload.single("file"), (req, res) => {
   if (!req.file) {
     return res.status(400).send({ message: "No file uploaded" });
@@ -104,13 +110,6 @@ app.post("/upload", upload.single("file"), (req, res) => {
   );
 });
 
-
-
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(helmet());
-
-// Cloudinary file upload route
 app.post("/uploadLogo", upload.single("logo"), (req, res) => {
   if (!req.file) {
     return res.status(400).send({ message: "No file uploaded" });
@@ -129,6 +128,9 @@ app.post("/uploadLogo", upload.single("logo"), (req, res) => {
   );
 });
 
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(helmet());
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, "../frontend/build")));
@@ -143,7 +145,7 @@ app.use((req, res, next) => {
   next();
 });
 
-
+// Define routes
 app.post("/register", signupRoute);
 app.post("/login", loginRoute);
 app.post("/events", AddEvent);
@@ -160,7 +162,7 @@ app.put("/updateUser/:userId", usersRoute);
 app.put("/events/:idEvent", UpdateEvent);
 app.delete("/events/:idEvent", deleteEvent);
 app.post("/addProgram", handleProgram);
-app.delete("/deleteProgram/:programId ", handleProgram);
+app.delete("/deleteProgram/:programId", handleProgram);
 app.put("/updateProgram/:programId", handleProgram);
 app.post("/loadPrograms", handleProgram);
 app.post("/addActivity", handleActivity);
